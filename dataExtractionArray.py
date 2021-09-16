@@ -165,47 +165,51 @@ def extractDataTxt(path):
     lineNumber = 0
     informLines = 15
     breakLines = 0
+
+    lines = []
+
     with open(path, "r", encoding="utf=16") as file:
-        for line in file:
-            lineNumber += 1
-            if "--- BREAK IN DATA ---" in line:
-                breakLines += 1
+        lines = file.read().split()
     file.close()
 
-    print("Line number: " + str(lineNumber))
+    print(len(lines))
+    print(lines)
 
-    print("Break lines: " + str(breakLines))
+    """lineNumber = len(lines)
 
-
+    for line in lines:
+        if "--- BREAK IN DATA ---" in line:
+            breakLines += 1
 
 
     # reading sampling rate value from file
     dataLines = lineNumber - informLines - breakLines
     inputData = np.zeros(shape=(dataLines, eegChannelNumber))
-    file = open(path, "r", encoding="utf-16")
+
     for i in range(informLines):
-        line = file.readline()
-        if "sampling rate" in line.lower():
-            for char in line:
+        if "sampling rate" in lines[i].lower():
+            for char in lines[i]:
                 if char.isdigit():
                     samplingRate += char
                 elif char == ".":
                     break
 
-    # reading EEG values from file
+    # removing lines containing information about examination
+    del lines[0:informLines]
+
+    # reading EEG values from list of strings
     breakCounter = 0
-    for row in range(dataLines + breakLines):
-        content = file.readline()
-        if row == (dataLines + breakLines - 1):
-            if content.startswith(("SHORT", "HORT", "ORT", "RT", "T")):
+
+    for l in range(dataLines + breakLines):
+        if l == (dataLines + breakLines - 1):
+            if lines[l].startswith(("SHORT", "HORT", "ORT", "RT", "T")):
                 break
 
-        if "--- BREAK IN DATA ---" in content:
+        if "--- BREAK IN DATA ---" in lines[l]:
             breakCounter += 1
             continue
         else:
-            res = content.split()
-            # print(row)
+            res = lines[l].split()
             for index in range(4):
                 res.pop(0)
 
@@ -224,15 +228,13 @@ def extractDataTxt(path):
             if len(res) != 20:
                 print("Length varies!")
 
-            inputData[row - breakCounter] = [res[0], res[1], res[2], res[3], res[4], res[5], res[6], res[7], res[8], res[9],
+            inputData[l - breakCounter] = [res[0], res[1], res[2], res[3], res[4], res[5], res[6], res[7], res[8],
+                                           res[9],
                                  res[10],
                               res[11],
                               res[12], res[13], res[14], res[15], res[16], res[17], res[18], res[19]]
 
-    file.close()
     examinationTime = int(len(inputData) / int(samplingRate))
 
-    print("Execution time: " + str(time.time() - startTime))
-
     return (time.time() - startTime)
-    # return inputData, int(examinationTime), int(samplingRate), channelsNames, eegChannelNumber, ecgChannelNumber
+    # return inputData, int(examinationTime), int(samplingRate), channelsNames, eegChannelNumber, ecgChannelNumber"""
